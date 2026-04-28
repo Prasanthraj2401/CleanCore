@@ -1,0 +1,7 @@
+@EndUserText.label: 'ZTEST FOR CLASS UI Service'
+@ObjectModel.leadingEntity.name: 'ZC_TESTFORCLASS'
+define service ZUIS_TESTFORCLASS
+  provider contracts odata_v4_ui
+{
+  expose ZC_TESTFORCLASS as TESTFORCLASS;
+}

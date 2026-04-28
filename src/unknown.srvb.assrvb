@@ -1,27 +1,27 @@
-Service Binding Name : ZUIS_EKKO_O4
+Service Binding Name : ZUIS_TESTFORCLASS_O4
 Binding Type         : OData V4 - UI
-Service Definition   : ZUIS_EKKO
-Migrated from        : ZSIRA_PO_REPORT
+Service Definition   : ZUIS_TESTFORCLASS
+Migrated from        : ZTEST_FOR_CLASS
 
 ─── Activation Steps (ADT / SAP BTP ABAP Environment) ───────────────────────
 
 1. Open ADT → your BTP ABAP project.
 2. File → New → Other → ABAP → Business Services → Service Binding
-     Name        : ZUIS_EKKO_O4
-     Description : ZSIRA PO REPORT OData V4 UI binding
+     Name        : ZUIS_TESTFORCLASS_O4
+     Description : ZTEST FOR CLASS OData V4 UI binding
      Binding Type: OData V4 - UI
-     Service Def : ZUIS_EKKO
+     Service Def : ZUIS_TESTFORCLASS
 3. Click "Publish" to activate the binding.
-4. Under "Service Version 0001" expand entity set "EKKO".
+4. Under "Service Version 0001" expand entity set "TESTFORCLASS".
 5. Click "Preview" → Fiori Elements List Report launches.
 
 ─── Service URL ──────────────────────────────────────────────────────────────
 
-/sap/opu/odata4/sap/zuis_ekko_o4/0001/
+/sap/opu/odata4/sap/zuis_testforclass_o4/0001/
 
 ─── Clean Core checklist ─────────────────────────────────────────────────────
 
-✅ Persistence table: ZTB_EKKO
+✅ Persistence table: ZTB_TESTFORCLASS
 ✅ Full CRUD with managed behavior.
 ✅ Draft enabled for Fiori editing.
 ✅ Authorization check included.

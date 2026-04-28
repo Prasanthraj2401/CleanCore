@@ -1,0 +1,50 @@
+managed implementation in class zbp_i_testforclass unique;
+strict(2);
+with draft;
+
+define behavior for ZI_TESTFORCLASS alias TESTFORCLASS
+persistent table ZTB_TESTFORCLASS
+draft table ZTBTESTFORCLASS_
+etag master ChangedAt
+lock master
+total etag ChangedAt
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+
+  field ( readonly ) CreatedAt, ChangedAt, CreatedBy, ChangedBy;
+  field ( readonly : update ) BusinessKey;
+  field ( mandatory : create ) BusinessKey;
+
+  mapping for ZTB_TESTFORCLASS corresponding
+  {
+    BusinessKey = business_key;
+    CreatedAt = created_at;
+    ChangedAt = changed_at;
+    CreatedBy = created_by;
+    ChangedBy = changed_by;
+  }
+
+  determination setDefaults on modify { create; }
+  validation validateMandatoryFields on save { create; update; }
+
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Edit;
+  draft action Resume;
+  draft determine action Prepare;
+}
+
+define behavior for ZC_TESTFORCLASS alias TESTFORCLASSP
+{
+  use create;
+  use update;
+  use delete;
+
+  use action Activate;
+  use action Discard;
+  use action Edit;
+  use action Resume;
+}

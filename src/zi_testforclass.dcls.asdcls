@@ -1,0 +1,7 @@
+@EndUserText.label: 'Access control for ZI_TESTFORCLASS'
+@MappingRole: true
+define role ZI_TESTFORCLASS {
+  grant select on ZI_TESTFORCLASS
+    where (BusinessKey) =
+      aspect pfcg_auth (S_TABU_DIS, DICBERCLS, actvt='03');
+}

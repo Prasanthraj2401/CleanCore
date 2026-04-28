@@ -1,4 +1,4 @@
-@EndUserText.label: 'ZSIRA PO DISP - Consumption View'
+@EndUserText.label: 'ZSIRA PO REPORT - Consumption View'
 @AccessControl.authorizationCheck: #CHECK
 @Metadata.allowExtensions: true
 define root view entity ZC_EKKO
@@ -7,5 +7,6 @@ define root view entity ZC_EKKO
   key Ebeln,
       Bukrs,
       Lifnr,
-      Bedat
+      Bedat,
+      _Ekpo
 }

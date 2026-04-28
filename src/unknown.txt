@@ -4,8 +4,8 @@
   "sap.app": {
     "id":    "com.cleancore.ekko",
     "type":  "application",
-    "title": "ZSIRA PO REPORT",
-    "description": "Migrated from SE38 report: ZSIRA_PO_REPORT",
+    "title": "ZSIRA PO DISP",
+    "description": "Migrated from SE38 report: zsira_po_disp",
     "dataSources": {
       "mainService": {
         "uri":  "/sap/opu/odata4/sap/zuis_ekko_o4/0001/",

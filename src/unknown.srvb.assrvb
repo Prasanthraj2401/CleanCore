@@ -1,14 +1,14 @@
 Service Binding Name : ZUIS_EKKO_O4
 Binding Type         : OData V4 - UI
 Service Definition   : ZUIS_EKKO
-Migrated from        : ZSIRA_PO_REPORT
+Migrated from        : zsira_po_disp
 
 ─── Activation Steps (ADT / SAP BTP ABAP Environment) ───────────────────────
 
 1. Open ADT → your BTP ABAP project.
 2. File → New → Other → ABAP → Business Services → Service Binding
      Name        : ZUIS_EKKO_O4
-     Description : ZSIRA PO REPORT OData V4 UI binding
+     Description : ZSIRA PO DISP OData V4 UI binding
      Binding Type: OData V4 - UI
      Service Def : ZUIS_EKKO
 3. Click "Publish" to activate the binding.

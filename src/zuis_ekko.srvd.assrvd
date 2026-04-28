@@ -1,0 +1,7 @@
+@EndUserText.label: 'ZSIRA PO REPORT UI Service'
+@ObjectModel.leadingEntity.name: 'ZC_EKKO'
+define service ZUIS_EKKO
+  provider contracts odata_v4_ui
+{
+  expose ZC_EKKO as EKKO;
+}

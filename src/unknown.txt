@@ -1,0 +1,101 @@
+{
+  "_version": "1.60.0",
+
+  "sap.app": {
+    "id":    "com.cleancore.ekko",
+    "type":  "application",
+    "title": "ZSIRA PO REPORT",
+    "description": "Migrated from SE38 report: ZSIRA_PO_REPORT",
+    "dataSources": {
+      "mainService": {
+        "uri":  "/sap/opu/odata4/sap/zuis_ekko_o4/0001/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+
+  "sap.ui": {
+    "technology": "UI5",
+    "fullWidth": false,
+    "supportedThemes": ["sap_horizon", "sap_horizon_dark", "sap_fiori_3"]
+  },
+
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  },
+
+  "sap.ui5": {
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m":            {},
+        "sap.ui.core":      {},
+        "sap.fe.templates": {}
+      }
+    },
+
+    "models": {
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode":    "Server",
+          "autoExpandSelect": true
+        }
+      },
+      "i18n": {
+        "type":     "sap.ui.model.resource.ResourceModel",
+        "settings": { "bundleName": "com.cleancore.ekko.i18n.i18n" }
+      }
+    },
+
+    "routing": {
+      "config": {
+        "routerClass": "sap.fe.core.AppComponent",
+        "viewType":    "XML",
+        "async":       true
+      },
+      "routes": [
+        {
+          "pattern": "",
+          "name":    "EKKOList",
+          "target":  "EKKOList"
+        },
+        {
+          "pattern": "EKKO({key})",
+          "name":    "EKKOObjectPage",
+          "target":  "EKKOObjectPage"
+        }
+      ],
+      "targets": {
+        "EKKOList": {
+          "type": "Component",
+          "id":   "EKKOList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "entitySet":         "EKKO",
+              "variantManagement": "Page",
+              "initialLoad":       false
+            }
+          }
+        },
+        "EKKOObjectPage": {
+          "type": "Component",
+          "id":   "EKKOObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "entitySet":             "EKKO",
+              "editableHeaderContent": true
+            }
+          }
+        }
+      }
+    }
+  }
+}

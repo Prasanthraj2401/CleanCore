@@ -1,27 +1,27 @@
-Service Binding Name : ZUIS_AABGJOB01_O4
+Service Binding Name : ZUIS_EKKO_O4
 Binding Type         : OData V4 - UI
-Service Definition   : ZUIS_AABGJOB01
-Migrated from        : zaa_bgjob_01
+Service Definition   : ZUIS_EKKO
+Migrated from        : ZSIRA_PO_REPORT
 
 ─── Activation Steps (ADT / SAP BTP ABAP Environment) ───────────────────────
 
 1. Open ADT → your BTP ABAP project.
 2. File → New → Other → ABAP → Business Services → Service Binding
-     Name        : ZUIS_AABGJOB01_O4
-     Description : ZAA BGJOB 01 OData V4 UI binding
+     Name        : ZUIS_EKKO_O4
+     Description : ZSIRA PO REPORT OData V4 UI binding
      Binding Type: OData V4 - UI
-     Service Def : ZUIS_AABGJOB01
+     Service Def : ZUIS_EKKO
 3. Click "Publish" to activate the binding.
-4. Under "Service Version 0001" expand entity set "AABGJOB01".
+4. Under "Service Version 0001" expand entity set "EKKO".
 5. Click "Preview" → Fiori Elements List Report launches.
 
 ─── Service URL ──────────────────────────────────────────────────────────────
 
-/sap/opu/odata4/sap/zuis_aabgjob01_o4/0001/
+/sap/opu/odata4/sap/zuis_ekko_o4/0001/
 
 ─── Clean Core checklist ─────────────────────────────────────────────────────
 
-✅ Persistence table: ZTB_AABGJOB01
+✅ Persistence table: ZTB_EKKO
 ✅ Full CRUD with managed behavior.
 ✅ Draft enabled for Fiori editing.
 ✅ Authorization check included.

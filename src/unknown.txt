@@ -2,13 +2,13 @@
   "_version": "1.60.0",
 
   "sap.app": {
-    "id":    "com.cleancore.aabgjob01",
+    "id":    "com.cleancore.ekko",
     "type":  "application",
-    "title": "ZAA BGJOB 01",
-    "description": "Migrated from SE38 report: zaa_bgjob_01",
+    "title": "ZSIRA PO REPORT",
+    "description": "Migrated from SE38 report: ZSIRA_PO_REPORT",
     "dataSources": {
       "mainService": {
-        "uri":  "/sap/opu/odata4/sap/zuis_aabgjob01_o4/0001/",
+        "uri":  "/sap/opu/odata4/sap/zuis_ekko_o4/0001/",
         "type": "OData",
         "settings": {
           "odataVersion": "4.0"
@@ -49,7 +49,7 @@
       },
       "i18n": {
         "type":     "sap.ui.model.resource.ResourceModel",
-        "settings": { "bundleName": "com.cleancore.aabgjob01.i18n.i18n" }
+        "settings": { "bundleName": "com.cleancore.ekko.i18n.i18n" }
       }
     },
 
@@ -62,35 +62,35 @@
       "routes": [
         {
           "pattern": "",
-          "name":    "AABGJOB01List",
-          "target":  "AABGJOB01List"
+          "name":    "EKKOList",
+          "target":  "EKKOList"
         },
         {
-          "pattern": "AABGJOB01({key})",
-          "name":    "AABGJOB01ObjectPage",
-          "target":  "AABGJOB01ObjectPage"
+          "pattern": "EKKO({key})",
+          "name":    "EKKOObjectPage",
+          "target":  "EKKOObjectPage"
         }
       ],
       "targets": {
-        "AABGJOB01List": {
+        "EKKOList": {
           "type": "Component",
-          "id":   "AABGJOB01List",
+          "id":   "EKKOList",
           "name": "sap.fe.templates.ListReport",
           "options": {
             "settings": {
-              "entitySet":         "AABGJOB01",
+              "entitySet":         "EKKO",
               "variantManagement": "Page",
               "initialLoad":       false
             }
           }
         },
-        "AABGJOB01ObjectPage": {
+        "EKKOObjectPage": {
           "type": "Component",
-          "id":   "AABGJOB01ObjectPage",
+          "id":   "EKKOObjectPage",
           "name": "sap.fe.templates.ObjectPage",
           "options": {
             "settings": {
-              "entitySet":             "AABGJOB01",
+              "entitySet":             "EKKO",
               "editableHeaderContent": true
             }
           }

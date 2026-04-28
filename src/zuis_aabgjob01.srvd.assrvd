@@ -1,0 +1,7 @@
+@EndUserText.label: 'ZAA BGJOB 01 UI Service'
+@ObjectModel.leadingEntity.name: 'ZC_AABGJOB01'
+define service ZUIS_AABGJOB01
+  provider contracts odata_v4_ui
+{
+  expose ZC_AABGJOB01 as AABGJOB01;
+}

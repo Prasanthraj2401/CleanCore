@@ -1,0 +1,7 @@
+@EndUserText.label: 'Access control for ZI_AABGJOB01'
+@MappingRole: true
+define role ZI_AABGJOB01 {
+  grant select on ZI_AABGJOB01
+    where (Jobname) =
+      aspect pfcg_auth (S_TABU_DIS, DICBERCLS, actvt='03');
+}

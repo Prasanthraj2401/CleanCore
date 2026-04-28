@@ -1,0 +1,50 @@
+managed implementation in class zbp_i_aabgjob01 unique;
+strict(2);
+with draft;
+
+define behavior for ZI_AABGJOB01 alias AABGJOB01
+persistent table ZTB_AABGJOB01
+draft table ZTBAABGJOB01_D
+etag master ChangedAt
+lock master
+total etag ChangedAt
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+
+  field ( readonly ) CreatedAt, ChangedAt, CreatedBy, ChangedBy;
+  field ( readonly : update ) Jobname;
+  field ( mandatory : create ) Jobname;
+
+  mapping for ZTB_AABGJOB01 corresponding
+  {
+    Jobname = jobname;
+    CreatedAt = created_at;
+    ChangedAt = changed_at;
+    CreatedBy = created_by;
+    ChangedBy = changed_by;
+  }
+
+  determination setDefaults on modify { create; }
+  validation validateMandatoryFields on save { create; update; }
+
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Edit;
+  draft action Resume;
+  draft determine action Prepare;
+}
+
+define behavior for ZC_AABGJOB01 alias AABGJOB01P
+{
+  use create;
+  use update;
+  use delete;
+
+  use action Activate;
+  use action Discard;
+  use action Edit;
+  use action Resume;
+}

@@ -1,10 +1,10 @@
-@EndUserText.label: 'ZSIRA PO REPORT'
+@EndUserText.label: 'ZSIRA ABAP REPORT'
 @AccessControl.authorizationCheck: #CHECK
 @Metadata.allowExtensions: true
 define root view entity ZI_EKKO
   as select from ZIB_EKKO as Ekko
-  association [0..*] to ZIB_EKPO as _Ekpo
-    on _A.Ebeln = _B.Ebeln
+  association [0..*] to ZIB_EKPO AS Ekpo
+    on a.Ebeln = b.Ebeln
 {
   key Ekko.Ebeln as Ebeln,
       Ekko.Bukrs as Bukrs,

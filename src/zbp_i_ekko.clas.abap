@@ -1,37 +1,44 @@
-CLASS zbp_i_ekko DEFINITION PUBLIC ABSTRACT FINAL
-  FOR BEHAVIOR OF zi_ekko.
+CLASS ZBP_I_EKKO DEFINITION
+  PUBLIC
+  ABSTRACT
+  FINAL
+  FOR BEHAVIOR OF ZI_EKKO.
 ENDCLASS.
 
-CLASS zbp_i_ekko IMPLEMENTATION.
+CLASS ZBP_I_EKKO IMPLEMENTATION.
 ENDCLASS.
 
 
-CLASS lhc_ekko DEFINITION
+CLASS LCL_EKKO_HANDLER DEFINITION
   INHERITING FROM cl_abap_behavior_handler.
-
   PRIVATE SECTION.
-    METHODS validateMandatoryFields FOR VALIDATE ON SAVE
-      IMPORTING keys FOR EKKO~validateMandatoryFields.
+    METHODS validate_mandatory_fields
+      FOR VALIDATION ZI_EKKO~validateMandatoryFields
+        IMPORTING keys FOR Ekko~Ekko.
 ENDCLASS.
 
+CLASS LCL_EKKO_HANDLER IMPLEMENTATION.
 
-CLASS lhc_ekko IMPLEMENTATION.
+  METHOD validate_mandatory_fields.
+    READ ENTITIES OF ZI_EKKO IN LOCAL MODE
+      ENTITY Ekko
+        FIELDS ( Ebeln ) WITH CORRESPONDING #( keys )
+      RESULT DATA(entities).
 
-  METHOD validateMandatoryFields.
-    READ ENTITIES OF zi_ekko IN LOCAL MODE
-      ENTITY EKKO
-      ALL FIELDS WITH CORRESPONDING #( keys )
-      RESULT DATA(lt_entities).
-
-    LOOP AT lt_entities ASSIGNING FIELD-SYMBOL(<ls_entity>).
-      IF <ls_entity>-Ebeln IS INITIAL.
-        APPEND VALUE #( %tky = <ls_entity>-%tky ) TO failed-EKKO.
+    LOOP AT entities INTO DATA(entity).
+      IF entity-Ebeln IS INITIAL.
         APPEND VALUE #(
-          %tky = <ls_entity>-%tky
+          %key        = entity-%key
+          %state_area = 'VALIDATE_MANDATORY'
+        ) TO reported-ekko.
+        APPEND VALUE #(
+          %key = entity-%key
           %msg = new_message_with_text(
-                   severity = if_abap_behv_message=>severity-error
-                   text     = |Ebeln must not be empty| )
-        ) TO reported-EKKO.
+            severity = if_abap_behv_message=>severity-error
+            text     = 'Ebeln is mandatory and must not be initial'
+          )
+        ) TO reported-ekko.
+        APPEND VALUE #( %key = entity-%key ) TO failed-ekko.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.

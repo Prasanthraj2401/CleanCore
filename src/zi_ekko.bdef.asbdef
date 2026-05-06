@@ -1,18 +1,29 @@
-managed implementation in class zbp_i_ekko unique;
-strict(2);
+managed implementation in class ZBP_I_EKKO unique;
+strict ( 2 );
 
-define behavior for ZI_EKKO alias EKKO
-authorization master ( instance )
+define behavior for ZI_EKKO alias Ekko
+persistent table ekko
+lock master
+authorization master ( global )
 {
   create;
   update;
   delete;
 
-  field ( readonly : update ) Ebeln;
-  field ( mandatory : create ) Ebeln;
+  validation validateMandatoryFields on save { create; update; }
+
+  field ( readonly ) Ebeln;
+
+  mapping for ekko corresponding
+  {
+    Ebeln = ebeln;
+    Bukrs = bukrs;
+    Lifnr = lifnr;
+    Bedat = bedat;
+  }
 }
 
-define behavior for ZC_EKKO alias EKKOP
+define behavior for ZC_EKKO alias Ekko
 {
   use create;
   use update;

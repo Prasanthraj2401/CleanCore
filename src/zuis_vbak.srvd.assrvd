@@ -1,0 +1,7 @@
+@EndUserText.label: 'ZD SD ALV UI Service'
+@ObjectModel.leadingEntity.name: 'ZC_VBAK'
+define service ZUIS_VBAK
+  provider contracts odata_v4_ui
+{
+  expose ZC_VBAK as VBAK;
+}

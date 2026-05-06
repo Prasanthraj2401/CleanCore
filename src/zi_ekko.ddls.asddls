@@ -1,5 +1,5 @@
-@EndUserText.label: 'ZSIRA ABAP REPORT'
-@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'ZSIRA PO REPORT'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
 @Metadata.allowExtensions: true
 define root view entity ZI_EKKO
   as select from ZIB_EKKO as Ekko

@@ -1,5 +1,5 @@
 @EndUserText.label: 'EKKO - Projection View'
-@AccessControl.authorizationCheck: #CHECK
+@AccessControl.authorizationCheck: #NOT_REQUIRED
 @Metadata.allowExtensions: true
 @UI.headerInfo: {
   typeName: 'Ekko',

@@ -1,18 +1,17 @@
 managed implementation in class ZBP_I_EKKO unique;
-strict ( 2 );
+strict ( 1 );
 
 define behavior for ZI_EKKO alias Ekko
 persistent table ekko
 lock master
-authorization master ( global )
 {
   create;
   update;
   delete;
 
-  validation validateMandatoryFields on save { create; update; }
-
   field ( readonly ) Ebeln;
+
+  validation validateMandatoryFields on save { create; update; }
 
   mapping for ekko corresponding
   {

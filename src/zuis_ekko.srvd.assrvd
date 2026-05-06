@@ -1,4 +1,7 @@
 @EndUserText.label: 'EKKO OData V4 Service'
-define service ZUIS_EKKO {
+@ObjectModel.leadingEntity.name: 'ZC_EKKO'
+define service ZUIS_EKKO
+  provider contracts odata_v4_ui
+{
   expose ZC_EKKO as Ekko;
 }

@@ -13,8 +13,8 @@ CLASS LCL_EKKO_HANDLER DEFINITION
   INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
     METHODS validate_mandatory_fields
-      FOR VALIDATION ZI_EKKO~validateMandatoryFields
-        IMPORTING keys FOR Ekko~Ekko.
+      FOR VALIDATE ON SAVE
+        IMPORTING keys FOR Ekko~validateMandatoryFields.
 ENDCLASS.
 
 CLASS LCL_EKKO_HANDLER IMPLEMENTATION.
@@ -30,12 +30,9 @@ CLASS LCL_EKKO_HANDLER IMPLEMENTATION.
         APPEND VALUE #(
           %key        = entity-%key
           %state_area = 'VALIDATE_MANDATORY'
-        ) TO reported-ekko.
-        APPEND VALUE #(
-          %key = entity-%key
-          %msg = new_message_with_text(
+          %msg        = new_message_with_text(
             severity = if_abap_behv_message=>severity-error
-            text     = 'Ebeln is mandatory and must not be initial'
+            text     = 'Ebeln is mandatory'
           )
         ) TO reported-ekko.
         APPEND VALUE #( %key = entity-%key ) TO failed-ekko.

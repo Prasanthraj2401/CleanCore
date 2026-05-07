@@ -1,0 +1,7 @@
+@EndUserText.label: 'Access control for ZI_EKKO'
+@MappingRole: true
+define role ZI_EKKO {
+  grant select on ZI_EKKO
+    where (Ebeln) =
+      aspect pfcg_auth (M_BEST_BSA, BSART, actvt='03');
+}

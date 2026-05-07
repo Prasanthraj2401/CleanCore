@@ -1,0 +1,20 @@
+managed implementation in class zbp_i_ekko unique;
+strict(2);
+
+define behavior for ZI_EKKO alias EKKO
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+
+  field ( readonly : update ) Ebeln;
+  field ( mandatory : create ) Ebeln;
+}
+
+define behavior for ZC_EKKO alias EKKOP
+{
+  use create;
+  use update;
+  use delete;
+}

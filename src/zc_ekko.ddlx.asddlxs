@@ -1,0 +1,39 @@
+@Metadata.layer: #CUSTOMER
+@UI: {
+  headerInfo: {
+    typeName:       'EKKO',
+    typeNamePlural: 'EKKO',
+    title:       { type: #STANDARD, value: 'Ebeln' },
+    description: { type: #STANDARD, value: 'Ebeln' }
+  }
+}
+annotate entity ZC_EKKO with
+{
+  @UI.facet: [{ id: 'Header', type: #IDENTIFICATION_REFERENCE, label: 'Ebeln', position: 10 }]
+  @UI.lineItem:      [{ position: 10, importance: #HIGH, label: 'Ebeln' }]
+  @UI.identification:[{ position: 10, label: 'Ebeln' }]
+  @UI.selectionField:[{ position: 10 }]
+  Ebeln;
+  @UI.lineItem:      [{ position: 20, label: 'Bukrs' }]
+  @UI.identification:[{ position: 20, label: 'Bukrs' }]
+  @UI.selectionField:[{ position: 20 }]
+  Bukrs;
+  @UI.lineItem:      [{ position: 30, label: 'Lifnr' }]
+  @UI.identification:[{ position: 30, label: 'Lifnr' }]
+  Lifnr;
+  @UI.lineItem:      [{ position: 40, label: 'Bedat' }]
+  @UI.identification:[{ position: 40, label: 'Bedat' }]
+  Bedat;
+  @UI.lineItem:      [{ position: 50, label: 'Ebelp' }]
+  @UI.identification:[{ position: 50, label: 'Ebelp' }]
+  Ebelp;
+  @UI.lineItem:      [{ position: 60, label: 'Matnr' }]
+  @UI.identification:[{ position: 60, label: 'Matnr' }]
+  Matnr;
+  @UI.lineItem:      [{ position: 70, label: 'Menge' }]
+  @UI.identification:[{ position: 70, label: 'Menge' }]
+  Menge;
+  @UI.lineItem:      [{ position: 80, label: 'Meins' }]
+  @UI.identification:[{ position: 80, label: 'Meins' }]
+  Meins;
+}

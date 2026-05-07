@@ -1,7 +1,0 @@
-@EndUserText.label: 'Access control for ZI_VBAK'
-@MappingRole: true
-define role ZI_VBAK {
-  grant select on ZI_VBAK
-    where (Vbeln) =
-      aspect pfcg_auth (V_VBAK_AAT, AUART, actvt='03');
-}

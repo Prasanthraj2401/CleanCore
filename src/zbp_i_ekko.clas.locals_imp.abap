@@ -1,30 +1,29 @@
-CLASS LCL_EKKO_HANDLER DEFINITION
+CLASS lhc_ekko DEFINITION
   INHERITING FROM cl_abap_behavior_handler.
+
   PRIVATE SECTION.
-    METHODS validate_mandatory_fields
-      FOR VALIDATE ON SAVE
-        IMPORTING keys FOR Ekko~validateMandatoryFields.
+    METHODS validateMandatoryFields FOR VALIDATE ON SAVE
+      IMPORTING keys FOR EKKO~validateMandatoryFields.
 ENDCLASS.
 
-CLASS LCL_EKKO_HANDLER IMPLEMENTATION.
 
-  METHOD validate_mandatory_fields.
-    READ ENTITIES OF ZI_EKKO IN LOCAL MODE
-      ENTITY Ekko
-        FIELDS ( Ebeln ) WITH CORRESPONDING #( keys )
-      RESULT DATA(entities).
+CLASS lhc_ekko IMPLEMENTATION.
 
-    LOOP AT entities INTO DATA(entity).
-      IF entity-Ebeln IS INITIAL.
+  METHOD validateMandatoryFields.
+    READ ENTITIES OF zi_ekko IN LOCAL MODE
+      ENTITY EKKO
+      ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_entities).
+
+    LOOP AT lt_entities ASSIGNING FIELD-SYMBOL(<ls_entity>).
+      IF <ls_entity>-Ebeln IS INITIAL.
+        APPEND VALUE #( %tky = <ls_entity>-%tky ) TO failed-EKKO.
         APPEND VALUE #(
-          %key        = entity-%key
-          %state_area = 'VALIDATE_MANDATORY'
-          %msg        = new_message_with_text(
-            severity = if_abap_behv_message=>severity-error
-            text     = 'Ebeln is mandatory'
-          )
-        ) TO reported-ekko.
-        APPEND VALUE #( %key = entity-%key ) TO failed-ekko.
+          %tky = <ls_entity>-%tky
+          %msg = new_message_with_text(
+                   severity = if_abap_behv_message=>severity-error
+                   text     = |Ebeln must not be empty| )
+        ) TO reported-EKKO.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.

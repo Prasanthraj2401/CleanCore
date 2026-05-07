@@ -4,13 +4,15 @@
   <asx:values>
    <VSEOCLASS>
     <CLSNAME>ZBP_I_EKKO</CLSNAME>
+    <VERSION>1</VERSION>
     <LANGU>E</LANGU>
     <DESCRIPT>RAP Behavior Implementation</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
-    <UNICODE>X</UNICODE>
     <FIXPT>X</FIXPT>
-    <CLSBCCAT>00</CLSBCCAT>
+    <UNICODE>5</UNICODE>
+    <CLSABSTRCT>X</CLSABSTRCT>
+    <CLSFINAL>X</CLSFINAL>
    </VSEOCLASS>
   </asx:values>
  </asx:abap>

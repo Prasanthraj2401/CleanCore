@@ -1,7 +1,0 @@
-@EndUserText.label: 'Sales Order OData V4 Service'
-@ObjectModel.leadingEntity.name: 'ZC_SalesOrder'
-define service ZUIS_SalesOrder
-  provider contracts odata_v4_ui
-{
-  expose ZC_SalesOrder as SalesOrder;
-}

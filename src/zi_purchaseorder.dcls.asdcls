@@ -1,9 +1,0 @@
-@EndUserText.label: 'Access Control: ZI_PurchaseOrder'
-@MappingRole: true
-define role ZI_PurchaseOrder
-{
-  grant
-    select
-      on ZI_PurchaseOrder
-        where ( 1 = 1 );
-}

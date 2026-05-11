@@ -1,7 +1,0 @@
-@EndUserText.label: 'Purchase Order OData V4 Service'
-@ObjectModel.leadingEntity.name: 'ZC_PurchaseOrder'
-define service ZUIS_PurchaseOrder
-  provider contracts odata_v4_ui
-{
-  expose ZC_PurchaseOrder as PurchaseOrder;
-}

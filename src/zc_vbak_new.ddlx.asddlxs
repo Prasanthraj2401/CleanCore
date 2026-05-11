@@ -10,7 +10,7 @@
 @EndUserText.label: 'Vbak - Metadata Extension'
 annotate entity ZC_VBAK_NEW with
 {
-  @UI.facet: [
+  @UI.facets: [
     {
       id:     'GeneralData',
       type:   #IDENTIFICATION_REFERENCE,

@@ -1,0 +1,34 @@
+managed implementation in class ZBP_I_VBAK_N unique;
+strict ( 1 );
+
+define behavior for ZI_VBAK_N alias Vbak
+  persistent table vbak
+  lock master
+  authorization master ( global )
+{
+  create;
+  update;
+  delete;
+
+  field ( readonly ) Vbeln;
+
+  validation validateMandatoryFields on save { create; update; }
+
+  mapping for vbak corresponding
+  {
+    Vbeln = vbeln;
+    Erdat = erdat;
+    Ernam = ernam;
+    Vbtyp = vbtyp;
+    Vkorg = vkorg;
+  }
+}
+
+projection;
+strict ( 1 );
+define behavior for ZC_VBAK_N alias VbakP
+{
+  use create;
+  use update;
+  use delete;
+}

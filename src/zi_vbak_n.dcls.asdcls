@@ -1,0 +1,9 @@
+@EndUserText.label: 'Access Control: ZI_VBAK_N'
+@MappingRole: true
+define role ZI_VBAK_N
+{
+  grant
+    select
+      on ZI_VBAK_N
+        where ( 1 = 1 );
+}

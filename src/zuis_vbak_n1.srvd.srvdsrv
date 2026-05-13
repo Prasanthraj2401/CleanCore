@@ -1,7 +1,0 @@
-@EndUserText.label: 'VBAK OData V4 Service'
-@ObjectModel.leadingEntity.name: 'ZC_VBAK_N1'
-define service ZUIS_VBAK_N1
-  provider contracts odata_v4_ui
-{
-  expose ZC_VBAK_N1 as Vbak;
-}

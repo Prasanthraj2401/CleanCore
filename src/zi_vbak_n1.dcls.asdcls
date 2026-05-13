@@ -1,7 +1,0 @@
-@EndUserText.label: 'Access Control for ZI_VBAK_N1'
-@MappingRole: true
-define role ZI_VBAK_N1
-{
-  grant select on ZI_VBAK_N1
-    where ( 1 = 1 );
-}

@@ -1,22 +1,33 @@
-REPORT zr_s4_fi_acdoca_bkpf NO STANDARD PAGE HEADING LINE-SIZE 200.
-
 *&---------------------------------------------------------------------*
 *& Report  ZR_S4_FI_ACDOCA_BKPF                                       *
-*& S/4HANA modernization of ZR_OLD_FI_BSEG_BKPF                       *
-*& Reads BKPF + ACDOCA (Universal Journal), calculates ZTAX / ZNET    *
-*& Displays result via CL_SALV_TABLE (modern ALV)                      *
+*& S/4HANA modernized — reads BKPF + ACDOCA (Universal Journal),       *
+*& calculates ZTAX (18%) and ZNET, displays via CL_SALV_TABLE.         *
 *&---------------------------------------------------------------------*
+REPORT zr_s4_fi_acdoca_bkpf NO STANDARD PAGE HEADING LINE-SIZE 200.
 
-*---------------------------------------------------------------------*
-*  Output structure                                                    *
-*  BSEG field mapping to ACDOCA:                                      *
-*    BUKRS  -> ACDOCA-RBUKRS                                          *
-*    HKONT  -> ACDOCA-RACCT                                           *
-*    DMBTR  -> ACDOCA-HSL  (local-currency amount)                    *
-*    BUZEI  -> ACDOCA-DOCLN (6-digit line; display as 3-digit item)   *
-*    SHKZG  -> ACDOCA-DRCRK                                           *
-*---------------------------------------------------------------------*
+**********************************************************************
+*  Output structure                                                   *
+**********************************************************************
 TYPES: BEGIN OF ty_out,
+         bukrs TYPE bkpf-bukrs,       " Company Code
+         belnr TYPE bkpf-belnr,       " Document Number
+         gjahr TYPE bkpf-gjahr,       " Fiscal Year
+         bldat TYPE bkpf-bldat,       " Document Date
+         budat TYPE bkpf-budat,       " Posting Date
+         blart TYPE bkpf-blart,       " Document Type
+         waers TYPE bkpf-waers,       " Currency
+         docln TYPE acdoca-docln,     " Line Item (6-digit, was BUZEI in BSEG)
+         racct TYPE acdoca-racct,     " G/L Account (was HKONT in BSEG)
+         drcrk TYPE acdoca-drcrk,     " Debit/Credit Indicator (was SHKZG)
+         hsl   TYPE acdoca-hsl,       " Amount Local Currency (was DMBTR)
+         ztax  TYPE acdoca-hsl,       " Custom: 18% tax on HSL
+         znet  TYPE acdoca-hsl,       " Custom: HSL minus ZTAX
+       END OF ty_out.
+
+**********************************************************************
+*  BKPF helper structure for FOR ALL ENTRIES guard (header fields)   *
+**********************************************************************
+TYPES: BEGIN OF ty_bkpf_key,
          bukrs TYPE bkpf-bukrs,
          belnr TYPE bkpf-belnr,
          gjahr TYPE bkpf-gjahr,
@@ -24,208 +35,201 @@ TYPES: BEGIN OF ty_out,
          budat TYPE bkpf-budat,
          blart TYPE bkpf-blart,
          waers TYPE bkpf-waers,
-         buzei TYPE bseg-buzei,
-         hkont TYPE bseg-hkont,
-         shkzg TYPE bseg-shkzg,
-         dmbtr TYPE bseg-dmbtr,
-         ztax  TYPE bseg-dmbtr,
-         znet  TYPE bseg-dmbtr,
-       END OF ty_out.
+       END OF ty_bkpf_key.
 
-DATA gt_out TYPE STANDARD TABLE OF ty_out WITH EMPTY KEY.
+**********************************************************************
+*  Global data                                                        *
+**********************************************************************
+DATA: gt_out  TYPE STANDARD TABLE OF ty_out  WITH EMPTY KEY.
 
-*---------------------------------------------------------------------*
-*  Tax rate constant                                                   *
-*---------------------------------------------------------------------*
-CONSTANTS lc_tax_rate TYPE p LENGTH 8 DECIMALS 2 VALUE '18.00'.
-CONSTANTS lc_hundred  TYPE p LENGTH 8 DECIMALS 2 VALUE '100.00'.
+*--- Tax rate constant (18%) ---
+CONSTANTS: gc_tax_rate TYPE p LENGTH 8 DECIMALS 2 VALUE '18.00',
+           gc_hundred  TYPE p LENGTH 8 DECIMALS 2 VALUE '100.00'.
 
-*---------------------------------------------------------------------*
+**********************************************************************
 *  Selection screen                                                   *
-*---------------------------------------------------------------------*
+**********************************************************************
 SELECT-OPTIONS: s_bukrs FOR bkpf-bukrs OBLIGATORY,
                 s_belnr FOR bkpf-belnr,
-                s_gjahr FOR bkpf-gjahr DEFAULT sy-datum+0(4),
+                s_gjahr FOR bkpf-gjahr DEFAULT sy-datum(4),
                 s_budat FOR bkpf-budat.
 
-*---------------------------------------------------------------------*
-*  Local class — all processing logic                                 *
-*---------------------------------------------------------------------*
+**********************************************************************
+*  Local class definition                                             *
+**********************************************************************
 CLASS lcl_report DEFINITION FINAL.
   PUBLIC SECTION.
+    CLASS-METHODS: run.
+  PRIVATE SECTION.
     CLASS-METHODS:
       get_data
-        IMPORTING
-          it_bukrs TYPE s_bukrs[]
-          it_belnr TYPE s_belnr[]
-          it_gjahr TYPE s_gjahr[]
-          it_budat TYPE s_budat[]
-        CHANGING
-          ct_out   TYPE STANDARD TABLE,
-      configure_alv_columns
-        IMPORTING
-          io_columns TYPE REF TO cl_salv_columns_table,
+        RETURNING VALUE(rt_out) TYPE STANDARD TABLE,
+      calc_tax_fields
+        CHANGING  ct_out        TYPE STANDARD TABLE,
       show_alv
-        IMPORTING
-          it_out TYPE STANDARD TABLE.
+        IMPORTING it_out        TYPE STANDARD TABLE.
 ENDCLASS.
 
+**********************************************************************
+*  START-OF-SELECTION                                                 *
+**********************************************************************
+START-OF-SELECTION.
+  lcl_report=>run( ).
+
+**********************************************************************
+*  Class implementation                                               *
+**********************************************************************
 CLASS lcl_report IMPLEMENTATION.
 
-  METHOD get_data.
-*   ----------------------------------------------------------------
-*   Single JOIN: BKPF + ACDOCA pushed entirely to HANA              *
-*   ACDOCA field mapping applied:                                   *
-*     ACDOCA-RBUKRS  = company code  (was BSEG-BUKRS)              *
-*     ACDOCA-RACCT   = G/L account   (was BSEG-HKONT)              *
-*     ACDOCA-HSL     = local amount  (was BSEG-DMBTR)              *
-*     ACDOCA-DRCRK   = debit/credit  (was BSEG-SHKZG)              *
-*     ACDOCA-DOCLN   = line (6-digit)(was BSEG-BUZEI 3-digit)      *
-*   ----------------------------------------------------------------
-    SELECT
-        bkpf~bukrs,
-        bkpf~belnr,
-        bkpf~gjahr,
-        bkpf~bldat,
-        bkpf~budat,
-        bkpf~blart,
-        bkpf~waers,
-        CAST( acdoca~docln AS NUMC LENGTH 3 ) AS buzei,
-        acdoca~racct  AS hkont,
-        acdoca~drcrk  AS shkzg,
-        acdoca~hsl    AS dmbtr
-      INTO TABLE @DATA(lt_raw)
-      FROM bkpf
-      INNER JOIN acdoca
-        ON  acdoca~rbukrs = bkpf~bukrs
-        AND acdoca~belnr  = bkpf~belnr
-        AND acdoca~gjahr  = bkpf~gjahr
-      WHERE bkpf~bukrs IN @it_bukrs
-        AND bkpf~belnr IN @it_belnr
-        AND bkpf~gjahr IN @it_gjahr
-        AND bkpf~budat IN @it_budat.
-
-    IF sy-subrc <> 0 OR lt_raw IS INITIAL.
+  METHOD run.
+    DATA(lt_out) = get_data( ).
+    IF lt_out IS INITIAL.
       MESSAGE 'No FI documents found for the selection criteria.' TYPE 'I'.
       RETURN.
     ENDIF.
-
-*   ----------------------------------------------------------------
-*   Inline calculation of ZTAX and ZNET                            *
-*   ZTAX  = DMBTR * 18 / 100                                       *
-*   ZNET  = DMBTR - ZTAX                                           *
-*   ----------------------------------------------------------------
-    ct_out = VALUE #(
-      FOR ls_raw IN lt_raw
-      LET lv_tax = ls_raw-dmbtr * lc_tax_rate / lc_hundred
-          lv_net = ls_raw-dmbtr - ( ls_raw-dmbtr * lc_tax_rate / lc_hundred )
-      IN (
-        bukrs = ls_raw-bukrs
-        belnr = ls_raw-belnr
-        gjahr = ls_raw-gjahr
-        bldat = ls_raw-bldat
-        budat = ls_raw-budat
-        blart = ls_raw-blart
-        waers = ls_raw-waers
-        buzei = ls_raw-buzei
-        hkont = ls_raw-hkont
-        shkzg = ls_raw-shkzg
-        dmbtr = ls_raw-dmbtr
-        ztax  = lv_tax
-        znet  = lv_net
-      ) ) ).
+    calc_tax_fields( CHANGING ct_out = lt_out ).
+    show_alv( it_out = lt_out ).
   ENDMETHOD.
 
-  METHOD configure_alv_columns.
-*   ----------------------------------------------------------------
-*   Set column headers and output lengths via CL_SALV_COLUMNS_TABLE *
-*   ----------------------------------------------------------------
-    DATA(lo_col_table) = io_columns.
+  METHOD get_data.
+    "--------------------------------------------------------------------
+    " Step 1: Read matching BKPF header keys first (guard for ACDOCA FAE)
+    "--------------------------------------------------------------------
+    DATA lt_bkpf TYPE STANDARD TABLE OF ty_bkpf_key WITH EMPTY KEY.
 
-    TRY.
-        DATA(lo_col) = lo_col_table->get_column( 'BUKRS' ).
-        lo_col->set_medium_text( 'CoCode' ).
-        lo_col->set_output_length( 6 ).
+    SELECT bukrs,
+           belnr,
+           gjahr,
+           bldat,
+           budat,
+           blart,
+           waers
+      FROM bkpf
+      INTO TABLE @lt_bkpf
+     WHERE bukrs IN @s_bukrs
+       AND belnr IN @s_belnr
+       AND gjahr IN @s_gjahr
+       AND budat IN @s_budat.
 
-        lo_col = lo_col_table->get_column( 'BELNR' ).
-        lo_col->set_medium_text( 'Document No.' ).
-        lo_col->set_output_length( 12 ).
+    IF sy-subrc <> 0 OR lt_bkpf IS INITIAL.
+      RETURN.
+    ENDIF.
 
-        lo_col = lo_col_table->get_column( 'GJAHR' ).
-        lo_col->set_medium_text( 'Year' ).
-        lo_col->set_output_length( 6 ).
+    "--------------------------------------------------------------------
+    " Step 2: JOIN BKPF + ACDOCA — single round trip, explicit fields.
+    " ACDOCA field mapping vs BSEG:
+    "   BSEG-BUKRS  → ACDOCA-RBUKRS
+    "   BSEG-HKONT  → ACDOCA-RACCT
+    "   BSEG-BUZEI  → ACDOCA-DOCLN  (6-digit in ACDOCA)
+    "   BSEG-DMBTR  → ACDOCA-HSL    (local-currency amount)
+    "   BSEG-SHKZG  → ACDOCA-DRCRK  (H=credit, S=debit)
+    "--------------------------------------------------------------------
+    SELECT b~bukrs,
+           b~belnr,
+           b~gjahr,
+           b~bldat,
+           b~budat,
+           b~blart,
+           b~waers,
+           a~docln,
+           a~racct,
+           a~drcrk,
+           a~hsl,
+           @( CONV acdoca-hsl( '0' ) ) AS ztax,
+           @( CONV acdoca-hsl( '0' ) ) AS znet
+      FROM bkpf AS b
+      INNER JOIN acdoca AS a
+        ON  a~rbukrs = b~bukrs
+        AND a~belnr  = b~belnr
+        AND a~gjahr  = b~gjahr
+      INTO TABLE @rt_out
+     WHERE b~bukrs IN @s_bukrs
+       AND b~belnr IN @s_belnr
+       AND b~gjahr IN @s_gjahr
+       AND b~budat IN @s_budat.
+  ENDMETHOD.
 
-        lo_col = lo_col_table->get_column( 'BLDAT' ).
-        lo_col->set_medium_text( 'Doc.Date' ).
-        lo_col->set_output_length( 12 ).
+  METHOD calc_tax_fields.
+    "--------------------------------------------------------------------
+    " Calculate ZTAX = HSL * 18 / 100
+    "          ZNET  = HSL - ZTAX
+    " All old-style MULTIPLY/DIVIDE/SUBTRACT/ADD/COMPUTE replaced by
+    " modern direct arithmetic expressions.
+    "--------------------------------------------------------------------
+    LOOP AT ct_out ASSIGNING FIELD-SYMBOL(<ls_out>).
+      " ZTAX = DMBTR * 18 / 100  (replaces MOVE+MULTIPLY+DIVIDE+MOVE)
+      <ls_out>-ztax = <ls_out>-hsl * gc_tax_rate / gc_hundred.
 
-        lo_col = lo_col_table->get_column( 'BUDAT' ).
-        lo_col->set_medium_text( 'Post.Date' ).
-        lo_col->set_output_length( 12 ).
+      " ZNET = DMBTR - ZTAX  (replaces MOVE+SUBTRACT+MOVE)
+      <ls_out>-znet = <ls_out>-hsl - <ls_out>-ztax.
 
-        lo_col = lo_col_table->get_column( 'BLART' ).
-        lo_col->set_medium_text( 'Type' ).
-        lo_col->set_output_length( 4 ).
-
-        lo_col = lo_col_table->get_column( 'BUZEI' ).
-        lo_col->set_medium_text( 'Item' ).
-        lo_col->set_output_length( 5 ).
-
-        lo_col = lo_col_table->get_column( 'HKONT' ).
-        lo_col->set_medium_text( 'G/L Acct' ).
-        lo_col->set_output_length( 12 ).
-
-        lo_col = lo_col_table->get_column( 'SHKZG' ).
-        lo_col->set_medium_text( 'D/C' ).
-        lo_col->set_output_length( 3 ).
-
-        lo_col = lo_col_table->get_column( 'DMBTR' ).
-        lo_col->set_medium_text( 'Amount (LC)' ).
-        lo_col->set_output_length( 17 ).
-
-        lo_col = lo_col_table->get_column( 'ZTAX' ).
-        lo_col->set_medium_text( 'Tax 18% (Z)' ).
-        lo_col->set_output_length( 17 ).
-
-        lo_col = lo_col_table->get_column( 'ZNET' ).
-        lo_col->set_medium_text( 'Net Amt (Z)' ).
-        lo_col->set_output_length( 17 ).
-
-        lo_col = lo_col_table->get_column( 'WAERS' ).
-        lo_col->set_medium_text( 'Curr.' ).
-        lo_col->set_output_length( 7 ).
-
-      CATCH cx_salv_not_found INTO DATA(lx_col).
-        MESSAGE lx_col->get_text( ) TYPE 'W'.
-    ENDTRY.
+      " V_TOTAL demo preserved as local variable (ADD / COMPUTE equivalents):
+      " v_total = hsl + ztax  →  kept as informational; not written to output
+      DATA(lv_total) = <ls_out>-hsl + <ls_out>-ztax.
+      " COMPUTE v_total = v_net + ztax  (direct assignment replaces COMPUTE):
+      lv_total = <ls_out>-znet + <ls_out>-ztax.
+      " lv_total not added to output — matches original program intent
+      UNASSIGN <ls_out>.   " explicit cleanup
+    ENDLOOP.
   ENDMETHOD.
 
   METHOD show_alv.
-*   ----------------------------------------------------------------
-*   CL_SALV_TABLE replaces REUSE_ALV_GRID_DISPLAY                  *
-*   RULE-A1: factory pattern only — constructor is private          *
-*   ----------------------------------------------------------------
-    DATA lo_salv TYPE REF TO cl_salv_table.
+    "--------------------------------------------------------------------
+    " Display via CL_SALV_TABLE (replaces REUSE_ALV_GRID_DISPLAY + SLIS)
+    " Per RULE-A1: NEVER use NEW cl_salv_table(); use factory() only.
+    "--------------------------------------------------------------------
+    DATA: lo_salv    TYPE REF TO cl_salv_table,
+          lo_columns TYPE REF TO cl_salv_columns_table,
+          lo_column  TYPE REF TO cl_salv_column_table,
+          lo_display TYPE REF TO cl_salv_display_settings,
+          lo_funcs   TYPE REF TO cl_salv_functions_list.
+
+    " We need a local copy typed to our concrete table type for FACTORY
+    DATA lt_display TYPE STANDARD TABLE OF ty_out WITH EMPTY KEY.
+    lt_display = CORRESPONDING #( it_out ).
 
     TRY.
         cl_salv_table=>factory(
           IMPORTING r_salv_table = lo_salv
-          CHANGING  t_table      = it_out ).
+          CHANGING  t_table      = lt_display ).
 
-*       ALV display settings
-        DATA(lo_display) = lo_salv->get_display_settings( ).
-        lo_display->set_striped_pattern( abap_true ).
-        lo_display->set_fit_column_to_table_size( abap_true ).
-
-*       Column configuration
-        lcl_report=>configure_alv_columns(
-          io_columns = lo_salv->get_columns( ) ).
-
-*       Functions — enable sort, filter, export
-        DATA(lo_funcs) = lo_salv->get_functions( ).
+        " Activate standard toolbar functions (sort, filter, export)
+        lo_funcs = lo_salv->get_functions( ).
         lo_funcs->set_all( abap_true ).
 
-*       Display
+        " Display settings: zebra striping + column width optimization
+        lo_display = lo_salv->get_display_settings( ).
+        lo_display->set_striped_pattern( cl_salv_display_settings=>true ).
+        lo_display->set_fit_column_to_table_size( cl_salv_display_settings=>true ).
+
+        " Column labels (replaces IT_FCAT / M_ADD_FCAT macro)
+        lo_columns = lo_salv->get_columns( ).
+        lo_columns->set_optimize( abap_true ).
+
+        DEFINE m_set_col_lbl.
+          TRY.
+              lo_column ?= lo_columns->get_column( &1 ).
+              lo_column->set_medium_text( &2 ).
+              lo_column->set_short_text(  &3 ).
+              lo_column->set_long_text(   &4 ).
+            CATCH cx_salv_not_found. "#EC NO_HANDLER
+          ENDTRY.
+        END-OF-DEFINITION.
+
+        m_set_col_lbl 'BUKRS' 'CoCode'        'CoC'  'Company Code'.
+        m_set_col_lbl 'BELNR' 'Document No.'  'DocNo''Document Number'.
+        m_set_col_lbl 'GJAHR' 'Fisc.Year'     'Year' 'Fiscal Year'.
+        m_set_col_lbl 'BLDAT' 'Doc.Date'      'DtDt' 'Document Date'.
+        m_set_col_lbl 'BUDAT' 'Post.Date'     'PtDt' 'Posting Date'.
+        m_set_col_lbl 'BLART' 'Doc.Type'      'Tp'   'Document Type'.
+        m_set_col_lbl 'WAERS' 'Currency'      'Cur'  'Currency Key'.
+        m_set_col_lbl 'DOCLN' 'Line Item'     'Itm'  'Journal Line Item'.
+        m_set_col_lbl 'RACCT' 'G/L Account'   'G/LA' 'G/L Account (RACCT)'.
+        m_set_col_lbl 'DRCRK' 'D/C Ind.'      'D/C'  'Debit/Credit Indicator'.
+        m_set_col_lbl 'HSL'   'Amount (LC)'   'Amt'  'Amount Local Currency'.
+        m_set_col_lbl 'ZTAX'  'Tax 18% (Z)'   'Tax'  'Custom Tax 18%'.
+        m_set_col_lbl 'ZNET'  'Net Amt (Z)'   'Net'  'Custom Net Amount'.
+
         lo_salv->display( ).
 
       CATCH cx_salv_msg INTO DATA(lx_salv).
@@ -234,21 +238,3 @@ CLASS lcl_report IMPLEMENTATION.
   ENDMETHOD.
 
 ENDCLASS.
-
-*---------------------------------------------------------------------*
-*  START-OF-SELECTION                                                 *
-*---------------------------------------------------------------------*
-START-OF-SELECTION.
-
-  lcl_report=>get_data(
-    EXPORTING
-      it_bukrs = s_bukrs[]
-      it_belnr = s_belnr[]
-      it_gjahr = s_gjahr[]
-      it_budat = s_budat[]
-    CHANGING
-      ct_out   = gt_out ).
-
-  IF gt_out IS NOT INITIAL.
-    lcl_report=>show_alv( it_out = gt_out ).
-  ENDIF.
